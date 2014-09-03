@@ -6,7 +6,6 @@ var url = require('url');
 var request = require('request');
 var http = require('http');
 var path = require('path');
-var AdmZip = require('adm-zip');
 var optimist = require('optimist');
 var childProcess = require('child_process');
 
@@ -286,23 +285,26 @@ switch (argv._[0]) {
     if (argv.chrome) {
       downloadIfNew(binaries.chrome, argv.out_dir, existingFiles,
         function(filename) {
-          var zip = new AdmZip(filename);
-          // Expected contents of the zip:
-          //   mac/linux: chromedriver
-          //   windows: chromedriver.exe
-          zip.extractAllTo(argv.out_dir);
-          if (os.type() != 'Windows_NT') {
-            fs.chmodSync(path.join(argv.out_dir, 'chromedriver'), 0755);
-          }
+          var unzip_prg = process.env.CHROMEDRIVER_UNZIP_PRG || '/usr/bin/unzip';
+          console.log(filename, argv.out_dir);
+          childProcess.execFile(unzip_prg, ['-o', '-d', argv.out_dir, filename], function(err, out, code) {
+            filename = path.join(argv.out_dir, 'chromedriver');
+            if (os.type() != 'Windows_NT') {
+              fs.chmodSync(filename, 0755);
+            }
+            done(null, filename);
+          });
         });
     }
     if (argv.ie) {
        downloadIfNew(binaries.ie, argv.out_dir, existingFiles,
         function(filename) {
-          var zip = new AdmZip(filename);
-          // Expected contents of the zip:
-          //   IEDriverServer.exe
-          zip.extractAllTo(argv.out_dir);
+          var unzip_prg = process.env.CHROMEDRIVER_UNZIP_PRG || 'unzip.exe';
+          console.log(filename, argv.out_dir);
+          childProcess.execFile(unzip_prg, ['-o', '-d', argv.out_dir, filename], function(err, out, code) {
+            filename = path.join(argv.out_dir, 'IEDriverServer.exe');
+            done(null, filename);
+          });
         });
     }
     break;
