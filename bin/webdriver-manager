@@ -292,7 +292,6 @@ switch (argv._[0]) {
             if (os.type() != 'Windows_NT') {
               fs.chmodSync(filename, 0755);
             }
-            done(null, filename);
           });
         });
     }
@@ -303,7 +302,6 @@ switch (argv._[0]) {
           console.log(filename, argv.out_dir);
           childProcess.execFile(unzip_prg, ['-o', '-d', argv.out_dir, filename], function(err, out, code) {
             filename = path.join(argv.out_dir, 'IEDriverServer.exe');
-            done(null, filename);
           });
         });
     }
